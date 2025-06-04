@@ -24,6 +24,7 @@ function renderUsers(users) {
             <td>${user.name.first} ${user.name.last}</td>
             <td>${user.email}</td>
             <td>${user.phone}</td>
+            <td>${user.dob.age}</td>
             <tr>
             `
     }).join("");
