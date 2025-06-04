@@ -18,16 +18,15 @@ async function fetchUsers() {
 
 function renderUsers(users) {
     tblBody.innerHTML = "";
-    users.forEach((user) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-            <td><img src="${user.picture.medium}" alt="User Photo"></td>
+    tblBody.innerHTML = users.map((user) => {
+        return `<tr>
+            <td><img src="${user.picture.medium}" alt=""></td>
             <td>${user.name.first} ${user.name.last}</td>
             <td>${user.email}</td>
             <td>${user.phone}</td>
-          `;
-        tblBody.appendChild(row);
-    });
+            <tr>
+            `
+    }).join("");
 }
 
 fetchBtn.addEventListener("click", async () => {
