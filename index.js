@@ -2,15 +2,12 @@
 // Add Age column
 // Add gender column, with two different emojis
 
-// Sort user by age
-// Search user by name
-// Add users instead of replacing them.
-
 const fetchBtn = document.getElementById("fetch-users");
 const tblBody = document.querySelector("#tbl-users tbody");
 const displayTotal = document.getElementById("display-total");
 const options = document.getElementById("options");
 const genderSelect = document.getElementById("gender-select");
+const thAge = document.getElementById("th-age");
 let users = []
 
 const fetchUsers = async () => {
@@ -63,3 +60,36 @@ const filterUsersByGender = () => {
 }
 
 genderSelect.addEventListener("change", filterUsersByGender);
+
+// Sort user by age
+let ageSortState = "default";
+
+const sortUsersByAge = () => {
+    let displayedUsers = [...users];
+
+    switch (ageSortState) {
+        case "default":
+            displayedUsers.sort((a, b) => a.dob.age - b.dob.age);
+            document.getElementById("th-age").textContent = "Age ↓";
+            ageSortState = "desc";
+            break;
+        case "desc":
+            displayedUsers.sort((a, b) => b.dob.age - a.dob.age);
+            document.getElementById("th-age").textContent = "Age ↑";
+            ageSortState = "asc";
+            break;
+        default:
+            displayedUsers = users;
+            document.getElementById("th-age").textContent = "Age";
+            ageSortState = "default";
+            break;
+    }
+
+    renderUsers(displayedUsers);
+    displayTotalUsers(displayedUsers.length, users.length);
+};
+
+thAge.addEventListener("click", sortUsersByAge);
+
+// Search user by name
+// Add users instead of replacing them.
