@@ -13,8 +13,19 @@
       <div>
         <h1>Vanilla JS Example</h1>
         <hr />
-        <button id="fetch-users">Fetch Users</button>
+        <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem">
+          <button id="fetch-users">Fetch Users</button>
+          <div id="options" style="display: none; align-items: center; gap: 1rem">
+            <label for="gender-select">Gender:</label>
+            <select id="gender-select" name="gender" style="margin: 0">
+              <option value="none">🚫</option>
+              <option value="male">👨</option>
+              <option value="female">👩</option>
+            </select>
+          </div>
+        </div>
       </div>
+      <span id="display-total"></span>
       <table id="tbl-users">
         <thead>
           <tr>
