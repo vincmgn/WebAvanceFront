@@ -9,7 +9,7 @@ const fetchBtn = document.getElementById("fetch-users");
 const tblBody = document.querySelector("#tbl-users tbody");
 let users = []
 
-async function fetchUsers() {
+const fetchUsers = async () => {
     try {
         const res = await fetch("https://randomuser.me/api/?results=20");
         const data = await res.json();
