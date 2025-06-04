@@ -29,6 +29,7 @@ const renderUsers = (users) => {
             <td>${user.email}</td>
             <td>${user.phone}</td>
             <td>${user.dob.age}</td>
+            <td>${user.gender === "male" ? "👨" : "👩"}</td>
         </tr>`;
     }).join("");
 }
