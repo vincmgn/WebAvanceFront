@@ -50,10 +50,10 @@
 
   createApp({
     setup() {
-      const users = ref([]);
+      const users = ref(JSON.parse(localStorage.getItem("filteredUsers")) || []);
       const total = ref(0);
       const searchInput = ref("");
-      const searchOptions = ref({ gender: "none", age: "default", research: "" });
+      const searchOptions = ref(JSON.parse(localStorage.getItem("searchOptions")) || { gender: "none", age: "default", research: "" });
 
       const sortIcon = computed(() => {
         if (searchOptions.value.age === "default") return "⇄";
@@ -72,6 +72,8 @@
           console.error("Error fetching users:", error);
           users.value = [];
           total.value = 0;
+        } finally {
+          localStorage.setItem("filteredUsers", JSON.stringify(users.value));
         }
       };
 
@@ -82,6 +84,7 @@
         displayedUsers = searchName(displayedUsers);
 
         total.value = displayedUsers.length;
+        localStorage.setItem("searchOptions", JSON.stringify(searchOptions.value));
         return displayedUsers;
       });
 
