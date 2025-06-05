@@ -85,23 +85,18 @@
         return displayedUsers;
       });
 
-      // Sort users by age
+      // Sort users by age using toSorted
       const sortUsersByAge = (displayedUsers) => {
         switch (searchOptions.value.age) {
           case "default":
-            displayedUsers = users.value;
-            break;
+            return users.value;
           case "desc":
-            displayedUsers.sort((a, b) => a.dob.age - b.dob.age);
-            break;
+            return displayedUsers.toSorted((a, b) => a.dob.age - b.dob.age);
           case "asc":
-            displayedUsers.sort((a, b) => b.dob.age - a.dob.age);
-            break;
+            return displayedUsers.toSorted((a, b) => b.dob.age - a.dob.age);
           default:
-            displayedUsers = users.value;
-            break;
+            return users.value;
         }
-        return displayedUsers;
       };
 
       const ageSort = () => {
