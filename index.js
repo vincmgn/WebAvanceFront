@@ -79,22 +79,23 @@ genderSelect.addEventListener("change", renderUsers);
 let ageSortState = "default";
 
 const sortUsersByAge = (displayedUsers) => {
-    let sortUsers = [...displayedUsers];
+    let sortUsers;
 
     switch (ageSortState) {
         case "default":
-            sortUsers.sort((a, b) => a.dob.age - b.dob.age);
-            document.getElementById("th-age").textContent = "Age ↓";
+            sortUsers = displayedUsers;
+            document.getElementById("th-age").textContent = "Age ⇄";
             searchOptions.age = "desc";
             break;
         case "desc":
-            sortUsers.sort((a, b) => b.dob.age - a.dob.age);
-            document.getElementById("th-age").textContent = "Age ↑";
-            searchOptions.age = "asc";
+            sortUsers = displayedUsers.toSorted((a, b) => a.dob.age - b.dob.age);
+            document.getElementById("th-age").textContent = "Age ↓";
+            searchOptions.age = "desc";
             break;
         default:
-            document.getElementById("th-age").textContent = "Age ⇄";
-            searchOptions.age = "default";
+            sortUsers = displayedUsers.toSorted((a, b) => b.dob.age - a.dob.age);
+            document.getElementById("th-age").textContent = "Age ↑";
+            searchOptions.age = "asc";
             break;
     }
     return sortUsers;
