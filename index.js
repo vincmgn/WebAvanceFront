@@ -9,6 +9,7 @@ const options = document.getElementById("options");
 const genderSelect = document.getElementById("gender-select");
 const thAge = document.getElementById("th-age");
 const searchInput = document.getElementById("search-input");
+let searchOptions = { gender: "none", age: "default", research: "" };
 let users = []
 
 const fetchUsers = async () => {
@@ -26,9 +27,15 @@ const displayTotalUsers = (displayed, total) => {
     displayTotal.textContent = `${displayed} / ${total} users`;
 };
 
-const renderUsers = (users) => {
+const renderUsers = () => {
+    let displayedUsers = [...users]
+
+    displayedUsers = filterUsersByGender(displayedUsers);
+    displayedUsers = sortUsersByAge(displayedUsers);
+    displayedUsers = searchName(displayedUsers);
+
     tblBody.innerHTML = "";
-    tblBody.innerHTML = users.map((user) => {
+    tblBody.innerHTML = displayedUsers.map((user) => {
         return `<tr>
             <td><img src="${user.picture.medium}" alt=""></td>
             <td>${user.name.first} ${user.name.last}</td>
@@ -38,11 +45,13 @@ const renderUsers = (users) => {
             <td>${user.gender === "male" ? "👨" : "👩"}</td>
         </tr>`;
     }).join("");
+
+    displayTotalUsers(displayedUsers.length, users.length);
 }
 
 const displayUsers = async () => {
     users = await fetchUsers();
-    renderUsers(users);
+    renderUsers();
     displayTotalUsers(users.length, users.length);
     options.style.display = "flex";
 }
@@ -50,67 +59,70 @@ const displayUsers = async () => {
 fetchBtn.addEventListener("click", displayUsers);
 
 // Filter user by gender
-const filterUsersByGender = () => {
+const filterUsersByGender = (displayedUsers) => {
     const selectedGender = genderSelect.value.toLowerCase();
-    let filteredUsers = users;
+    let filteredUsers = displayedUsers;
     if (selectedGender !== "none") {
-        filteredUsers = users.filter(user => user.gender === selectedGender);
+        filteredUsers = displayedUsers.filter(user => user.gender === selectedGender);
+        searchOptions.gender = "none";
     }
-    renderUsers(filteredUsers);
-    displayTotalUsers(filteredUsers.length, users.length);
+    searchOptions.gender = selectedGender;
+    return filteredUsers;
 }
 
-genderSelect.addEventListener("change", filterUsersByGender);
+genderSelect.addEventListener("change", renderUsers);
 
 // Sort user by age
 let ageSortState = "default";
 
-const sortUsersByAge = () => {
-    let displayedUsers = [...users];
+const sortUsersByAge = (displayedUsers) => {
+    let sortUsers = [...displayedUsers];
 
     switch (ageSortState) {
         case "default":
-            displayedUsers.sort((a, b) => a.dob.age - b.dob.age);
+            sortUsers.sort((a, b) => a.dob.age - b.dob.age);
             document.getElementById("th-age").textContent = "Age ↓";
             ageSortState = "desc";
+            searchOptions.age = "desc";
             break;
         case "desc":
-            displayedUsers.sort((a, b) => b.dob.age - a.dob.age);
+            sortUsers.sort((a, b) => b.dob.age - a.dob.age);
             document.getElementById("th-age").textContent = "Age ↑";
             ageSortState = "asc";
+            searchOptions.age = "asc";
             break;
         default:
-            displayedUsers = users;
+            sortUsers = users;
             document.getElementById("th-age").textContent = "Age ⇄";
             ageSortState = "default";
+            searchOptions.age = "default";
             break;
     }
-
-    renderUsers(displayedUsers);
-    displayTotalUsers(displayedUsers.length, users.length);
+    return sortUsers;
 };
 
-thAge.addEventListener("click", sortUsersByAge);
+thAge.addEventListener("click", renderUsers);
 
 // Search user by name
-const searchName = () => {
+const searchName = (displayedUsers) => {
     const searchItems = removeAccents(searchInput.value.toLowerCase()).split(" ");
 
-    const searchUsers = users.filter(user => {
+    const searchUsers = displayedUsers.filter(user => {
         const lastName = removeAccents(`${user.name.last}`.toLowerCase());
         const firstName = removeAccents(`${user.name.first}`.toLowerCase());
         return searchItems.every(word =>
             lastName.startsWith(word) || firstName.startsWith(word)
         );
     })
-    renderUsers(searchUsers);
-    displayTotalUsers(searchUsers.length, users.length);
+    searchOptions.research = searchInput.value;
+
+    return searchUsers;
 }
 
 const removeAccents = (str) => {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-searchInput.addEventListener("input", searchName);
+searchInput.addEventListener("input", renderUsers);
 
 // Add users instead of replacing them.
