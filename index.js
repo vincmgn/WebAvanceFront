@@ -8,6 +8,7 @@ const displayTotal = document.getElementById("display-total");
 const options = document.getElementById("options");
 const genderSelect = document.getElementById("gender-select");
 const thAge = document.getElementById("th-age");
+const searchInput = document.getElementById("search-input");
 let users = []
 
 const fetchUsers = async () => {
@@ -80,7 +81,7 @@ const sortUsersByAge = () => {
             break;
         default:
             displayedUsers = users;
-            document.getElementById("th-age").textContent = "Age";
+            document.getElementById("th-age").textContent = "Age ⇄";
             ageSortState = "default";
             break;
     }
@@ -92,4 +93,24 @@ const sortUsersByAge = () => {
 thAge.addEventListener("click", sortUsersByAge);
 
 // Search user by name
+const searchName = () => {
+    const searchItems = removeAccents(searchInput.value.toLowerCase()).split(" ");
+
+    const searchUsers = users.filter(user => {
+        const lastName = removeAccents(`${user.name.last}`.toLowerCase());
+        const firstName = removeAccents(`${user.name.first}`.toLowerCase());
+        return searchItems.every(word =>
+            lastName.startsWith(word) || firstName.startsWith(word)
+        );
+    })
+    renderUsers(searchUsers);
+    displayTotalUsers(searchUsers.length, users.length);
+}
+
+const removeAccents = (str) => {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+searchInput.addEventListener("input", searchName);
+
 // Add users instead of replacing them.
