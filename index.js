@@ -49,8 +49,10 @@ const renderUsers = () => {
     displayTotalUsers(displayedUsers.length, users.length);
 }
 
+// Add users instead of replacing them.
 const displayUsers = async () => {
-    users = await fetchUsers();
+    const fetchUser = await fetchUsers();
+    users = [...users, ...fetchUser];
     renderUsers();
     displayTotalUsers(users.length, users.length);
     options.style.display = "flex";
@@ -61,12 +63,13 @@ fetchBtn.addEventListener("click", displayUsers);
 // Filter user by gender
 const filterUsersByGender = (displayedUsers) => {
     const selectedGender = genderSelect.value.toLowerCase();
+    searchOptions.gender = selectedGender;
+
+
     let filteredUsers = displayedUsers;
     if (selectedGender !== "none") {
         filteredUsers = displayedUsers.filter(user => user.gender === selectedGender);
-        searchOptions.gender = "none";
     }
-    searchOptions.gender = selectedGender;
     return filteredUsers;
 }
 
@@ -82,30 +85,42 @@ const sortUsersByAge = (displayedUsers) => {
         case "default":
             sortUsers.sort((a, b) => a.dob.age - b.dob.age);
             document.getElementById("th-age").textContent = "Age ↓";
-            ageSortState = "desc";
             searchOptions.age = "desc";
             break;
         case "desc":
             sortUsers.sort((a, b) => b.dob.age - a.dob.age);
             document.getElementById("th-age").textContent = "Age ↑";
-            ageSortState = "asc";
             searchOptions.age = "asc";
             break;
         default:
-            sortUsers = users;
             document.getElementById("th-age").textContent = "Age ⇄";
-            ageSortState = "default";
             searchOptions.age = "default";
             break;
     }
     return sortUsers;
 };
 
-thAge.addEventListener("click", renderUsers);
+const handleAgeClick = () => {
+    switch (ageSortState) {
+        case "default":
+            ageSortState = "desc";
+            break;
+        case "desc":
+            ageSortState = "asc";
+            break;
+        case "asc":
+            ageSortState = "default";
+            break;
+    }
+    renderUsers();
+}
+
+thAge.addEventListener("click", handleAgeClick);
 
 // Search user by name
 const searchName = (displayedUsers) => {
     const searchItems = removeAccents(searchInput.value.toLowerCase()).split(" ");
+    searchOptions.research = searchInput.value;
 
     const searchUsers = displayedUsers.filter(user => {
         const lastName = removeAccents(`${user.name.last}`.toLowerCase());
@@ -114,7 +129,6 @@ const searchName = (displayedUsers) => {
             lastName.startsWith(word) || firstName.startsWith(word)
         );
     })
-    searchOptions.research = searchInput.value;
 
     return searchUsers;
 }
@@ -124,5 +138,3 @@ const removeAccents = (str) => {
 }
 
 searchInput.addEventListener("input", renderUsers);
-
-// Add users instead of replacing them.
