@@ -4,7 +4,7 @@
 <div id="app">
   <main style="padding: 1rem">
     <div>
-      <h1>Vanilla JS Example</h1>
+      <h1>VueJS Example</h1>
       <hr />
       <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem">
         <button @click="fetchUsers">Fetch Users</button>
@@ -77,6 +77,9 @@
           <td>{{user.phone}}</td>
           <td>{{user.dob.age}}</td>
           <td><span style="font-size: 1.5rem">{{user.gender === "male" ? "👨" : "👩"}}</span></td>
+          <td>
+            <button @click="deleteUser(user.login.username)" style="background-color: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer">Delete</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -189,7 +192,7 @@
         }
 
         const newUser = {
-          picture: { medium: formData.value.photo || "https://via.placeholder.com/150" },
+          picture: { medium: formData.value.photo },
           name: { first: formData.value.firstName, last: formData.value.lastName },
           email: formData.value.email,
           phone: formData.value.tel,
@@ -217,6 +220,13 @@
         };
       };
 
+      //remove user
+      const deleteUser = (username) => {
+        users.value = users.value.filter((user) => user.login.username !== username);
+        total.value = users.value.length;
+        localStorage.setItem("filteredUsers", JSON.stringify(users.value));
+      };
+
       return {
         users,
         total,
@@ -228,6 +238,7 @@
         ageSort,
         fetchUsers,
         submit,
+        deleteUser,
       };
     },
   }).mount("#app");
