@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Vanilla JS Example</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css" />
+  </head>
+
+  <body>
+    <main>
+      <div>
+        <h1>Vanilla JS Example</h1>
+        <hr />
+        <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem">
+          <button id="fetch-users">Fetch Users</button>
+          <div id="options" style="display: none; align-items: center; gap: 1rem">
+            <label for="gender-select">Gender:</label>
+            <select id="gender-select" name="gender" style="margin: 0">
+              <option value="none">🚫</option>
+              <option value="male">👨</option>
+              <option value="female">👩</option>
+            </select>
+            <label for="earch-input">Research:</label>
+            <input type="text" id="search-input" placeholder="Search by name" style="min-width: 400px; margin: 0" />
+          </div>
+        </div>
+      </div>
+      <span id="display-total"></span>
+      <table id="tbl-users">
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Tel</th>
+            <th id="th-age" style="cursor: pointer">Age ⇄</th>
+            <th>Gender</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </main>
+
+    <script src="index.js"></script>
+  </body>
+</html>
