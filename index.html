@@ -54,7 +54,7 @@
         <button type="submit" style="margin-top: 1.5rem; width: 200px">Submit</button>
       </form>
     </div>
-    <span v-if="users.length"> {{total}} / {{users.length}} users</span>
+    <span v-if="users.length"> {{filteredUsers.length}} / {{users.length}} users</span>
     <table>
       <thead>
         <tr>
@@ -87,12 +87,11 @@
 </div>
 
 <script>
-  const { createApp, ref, onMounted, computed } = Vue;
+  const { createApp, ref, onMounted, computed, watchEffect } = Vue;
 
   createApp({
     setup() {
       const users = ref(JSON.parse(localStorage.getItem("filteredUsers")) || []);
-      const total = ref(0);
       const searchInput = ref("");
       const searchOptions = ref(JSON.parse(localStorage.getItem("searchOptions")) || { gender: "none", age: "default", research: "" });
 
@@ -108,15 +107,17 @@
           const res = await fetch("https://randomuser.me/api/?results=20");
           const data = await res.json();
           users.value = [...users.value, ...data.results];
-          total.value = users.value.length;
         } catch (error) {
           console.error("Error fetching users:", error);
           users.value = [];
-          total.value = 0;
         } finally {
           localStorage.setItem("filteredUsers", JSON.stringify(users.value));
         }
       };
+
+      watchEffect(() => {
+        document.title = `VueJS Example - ${users.value.length} Users`;
+      });
 
       const filteredUsers = computed(() => {
         let displayedUsers = [...users.value];
@@ -124,7 +125,6 @@
         displayedUsers = filterUsersByGender(displayedUsers);
         displayedUsers = searchName(displayedUsers);
 
-        total.value = displayedUsers.length;
         localStorage.setItem("searchOptions", JSON.stringify(searchOptions.value));
         return displayedUsers;
       });
@@ -144,7 +144,17 @@
       };
 
       const ageSort = () => {
-        searchOptions.value.age = searchOptions.value.age === "default" ? "desc" : searchOptions.value.age === "desc" ? "asc" : "default";
+        switch (searchOptions.value.age) {
+          case "default":
+            searchOptions.value.age = "desc";
+            break;
+          case "desc":
+            searchOptions.value.age = "asc";
+            break;
+          default:
+            searchOptions.value.age = "default";
+            break;
+        }
       };
 
       // Sort users by gender
@@ -202,7 +212,6 @@
         };
 
         users.value.push(newUser);
-        total.value = users.value.length;
 
         localStorage.setItem("filteredUsers", JSON.stringify(users.value));
         resetForm();
@@ -223,13 +232,11 @@
       //remove user
       const deleteUser = (username) => {
         users.value = users.value.filter((user) => user.login.username !== username);
-        total.value = users.value.length;
         localStorage.setItem("filteredUsers", JSON.stringify(users.value));
       };
 
       return {
         users,
-        total,
         searchOptions,
         filteredUsers,
         sortIcon,
