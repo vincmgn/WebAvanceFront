@@ -8,7 +8,7 @@
       <hr />
       <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem">
         <button @click="fetchUsers">Fetch Users</button>
-        <button @click="users = []">Clear Users</button>
+        <button @click="removeAllUsers">Clear Users</button>
         <div v-if="users.length" id="options" style="display: flex; align-items: center; gap: 1rem">
           <label for="gender-select">Gender:</label>
           <select v-model="searchOptions.gender" id="gender-select" name="gender" style="margin: 0">
@@ -236,6 +236,13 @@
         localStorage.setItem("filteredUsers", JSON.stringify(users.value));
       };
 
+      // remove all users
+      const removeAllUsers = () => {
+        users.value = [];
+        localStorage.removeItem("filteredUsers");
+        localStorage.removeItem("searchOptions");
+      };
+
       return {
         users,
         searchOptions,
@@ -247,6 +254,7 @@
         fetchUsers,
         submit,
         deleteUser,
+        removeAllUsers,
       };
     },
   }).mount("#app");
