@@ -1,0 +1,270 @@
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.fluid.classless.min.css" />
+
+<div id="app">
+  <main style="padding: 1rem">
+    <div>
+      <h1>VueJS Example</h1>
+      <hr />
+      <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem">
+        <button @click="fetchUsers">Fetch Users</button>
+        <button @click="removeAllUsers">Clear Users</button>
+        <div v-if="users.length" id="options" style="display: flex; align-items: center; gap: 1rem">
+          <label for="gender-select">Gender:</label>
+          <select v-model="searchOptions.gender" id="gender-select" name="gender" style="margin: 0">
+            <option value="none">🚫</option>
+            <option value="male">👨</option>
+            <option value="female">👩</option>
+          </select>
+          <label for="age-select">Select age :</label>
+          <input v-model="searchInput" type="text" id="age-select" placeholder="Search by name" style="min-width: 400px; margin: 0" />
+        </div>
+      </div>
+      <form style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem" @submit.prevent="submit">
+        <div>
+          <label for="photo">Photo</label>
+          <input id="photo" name="photo" type="text" v-model="formData.photo" />
+        </div>
+        <div>
+          <label for="firstName">Firstname</label>
+          <input id="firstName" name="firstName" type="text" v-model="formData.firstName" />
+        </div>
+        <div>
+          <label for="lastname">Lastname</label>
+          <input id="lastname" name="lastname" type="text" v-model="formData.lastName" />
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" v-model="formData.email" />
+        </div>
+        <div>
+          <label for="tel">Tel</label>
+          <input id="tel" name="tel" type="tel" v-model="formData.tel" />
+        </div>
+        <div>
+          <label for="age">Age</label>
+          <input id="age" name="age" type="number" v-model.number="formData.age" />
+        </div>
+        <div>
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender" v-model="formData.gender">
+            <option value="male">👨 Male</option>
+            <option value="female">👩 Female</option>
+          </select>
+        </div>
+        <button type="submit" style="margin-top: 1.5rem; width: 200px">Submit</button>
+      </form>
+    </div>
+    <span v-if="users.length" :class="{red: filteredUsers.length>30}" class="strong"> {{filteredUsers.length}} / {{users.length}} users</span>
+    <table>
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Tel</th>
+          <th style="cursor: pointer">
+            <button @click="ageSort" style="background-color: transparent; border: transparent">Age <span v-if="users.length">{{ sortIcon }}</span></button>
+          </th>
+          <th>Gender</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="user in filteredUsers" :key="user.login.username">
+          <td><img :src="user.picture.medium" alt="" style="width: 80px; height: auto" /></td>
+          <td>{{user.name.first}} {{user.name.last}}</td>
+          <td>{{user.email}}</td>
+          <td>{{user.phone}}</td>
+          <td>{{user.dob.age}}</td>
+          <td><span style="font-size: 1.5rem">{{user.gender === "male" ? "👨" : "👩"}}</span></td>
+          <td>
+            <button @click="deleteUser(user.login.username)" style="background-color: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+</div>
+
+<script>
+  const { createApp, ref, onMounted, computed, watchEffect } = Vue;
+
+  createApp({
+    setup() {
+      const users = ref(JSON.parse(localStorage.getItem("filteredUsers")) || []);
+      const searchInput = ref("");
+      const searchOptions = ref(JSON.parse(localStorage.getItem("searchOptions")) || { gender: "none", age: "default", research: "" });
+
+      const sortIcon = computed(() => {
+        if (searchOptions.value.age === "default") return "⇄";
+        if (searchOptions.value.age === "desc") return "↓";
+        if (searchOptions.value.age === "asc") return "↑";
+        return "";
+      });
+
+      const fetchUsers = async () => {
+        try {
+          const res = await fetch("https://randomuser.me/api/?results=20");
+          const data = await res.json();
+          users.value = [...users.value, ...data.results];
+        } catch (error) {
+          console.error("Error fetching users:", error);
+          users.value = [];
+        } finally {
+          localStorage.setItem("filteredUsers", JSON.stringify(users.value));
+        }
+      };
+
+      watchEffect(() => {
+        document.title = `VueJS Example - ${users.value.length} Users`;
+      });
+
+      const filteredUsers = computed(() => {
+        let displayedUsers = [...users.value];
+        displayedUsers = sortUsersByAge(displayedUsers);
+        displayedUsers = filterUsersByGender(displayedUsers);
+        displayedUsers = searchName(displayedUsers);
+
+        localStorage.setItem("searchOptions", JSON.stringify(searchOptions.value));
+        return displayedUsers;
+      });
+
+      // Sort users by age using toSorted
+      const sortUsersByAge = (displayedUsers) => {
+        switch (searchOptions.value.age) {
+          case "default":
+            return users.value;
+          case "desc":
+            return displayedUsers.toSorted((a, b) => a.dob.age - b.dob.age);
+          case "asc":
+            return displayedUsers.toSorted((a, b) => b.dob.age - a.dob.age);
+          default:
+            return users.value;
+        }
+      };
+
+      const ageSort = () => {
+        switch (searchOptions.value.age) {
+          case "default":
+            searchOptions.value.age = "desc";
+            break;
+          case "desc":
+            searchOptions.value.age = "asc";
+            break;
+          default:
+            searchOptions.value.age = "default";
+            break;
+        }
+      };
+
+      // Sort users by gender
+      const filterUsersByGender = (displayedUsers) => {
+        let filteredUsers = [...displayedUsers];
+
+        if (searchOptions.value.gender !== "none") {
+          filteredUsers = displayedUsers.filter((user) => user.gender === searchOptions.value.gender);
+        }
+
+        return filteredUsers;
+      };
+
+      // search by name
+      const searchName = (displayedUsers) => {
+        const searchItems = removeAccents(searchInput.value.toLowerCase()).split(" ");
+        searchOptions.value.research = searchInput.value;
+
+        const searchUsers = displayedUsers.filter((user) => {
+          const lastName = removeAccents(`${user.name.last}`.toLowerCase());
+          const firstName = removeAccents(`${user.name.first}`.toLowerCase());
+          return searchItems.every((word) => lastName.startsWith(word) || firstName.startsWith(word));
+        });
+
+        return searchUsers;
+      };
+
+      const removeAccents = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+      // add new user with form
+      const formData = ref({
+        photo: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        tel: "",
+        age: null,
+        gender: "",
+      });
+
+      const submit = () => {
+        if (!formData.value.firstName || !formData.value.lastName || !formData.value.email || !formData.value.tel || !formData.value.age || !formData.value.gender) {
+          alert("Please fill in all fields.");
+          return;
+        }
+
+        const newUser = {
+          picture: { medium: formData.value.photo },
+          name: { first: formData.value.firstName, last: formData.value.lastName },
+          email: formData.value.email,
+          phone: formData.value.tel,
+          dob: { age: formData.value.age },
+          gender: formData.value.gender,
+          login: { username: `${formData.value.firstName.toLowerCase()}_${formData.value.lastName.toLowerCase()}` },
+        };
+
+        users.value.push(newUser);
+
+        localStorage.setItem("filteredUsers", JSON.stringify(users.value));
+        resetForm();
+      };
+
+      const resetForm = () => {
+        formData.value = {
+          photo: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          tel: "",
+          age: null,
+          gender: "",
+        };
+      };
+
+      //remove user
+      const deleteUser = (username) => {
+        users.value = users.value.filter((user) => user.login.username !== username);
+        localStorage.setItem("filteredUsers", JSON.stringify(users.value));
+      };
+
+      // remove all users
+      const removeAllUsers = () => {
+        users.value = [];
+        localStorage.removeItem("filteredUsers");
+        localStorage.removeItem("searchOptions");
+      };
+
+      return {
+        users,
+        searchOptions,
+        filteredUsers,
+        sortIcon,
+        searchInput,
+        formData,
+        ageSort,
+        fetchUsers,
+        submit,
+        deleteUser,
+        removeAllUsers,
+      };
+    },
+  }).mount("#app");
+</script>
+
+<style>
+  .red {
+    color: red;
+  }
+  .strong {
+    font-weight: bold;
+  }
+</style>
