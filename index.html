@@ -62,7 +62,9 @@
           <th>Nom</th>
           <th>Email</th>
           <th>Tel</th>
-          <th style="cursor: pointer" @click="ageSort">Age <span v-if="users.length">{{ sortIcon }}</span></th>
+          <th style="cursor: pointer">
+            <button @click="ageSort" style="background-color: transparent; border: transparent">Age <span v-if="users.length">{{ sortIcon }}</span></button>
+          </th>
           <th>Gender</th>
           <th>Actions</th>
         </tr>
