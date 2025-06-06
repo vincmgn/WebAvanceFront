@@ -8,6 +8,7 @@
       <hr />
       <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem">
         <button @click="fetchUsers">Fetch Users</button>
+        <button @click="users = []">Clear Users</button>
         <div v-if="users.length" id="options" style="display: flex; align-items: center; gap: 1rem">
           <label for="gender-select">Gender:</label>
           <select v-model="searchOptions.gender" id="gender-select" name="gender" style="margin: 0">
@@ -54,7 +55,7 @@
         <button type="submit" style="margin-top: 1.5rem; width: 200px">Submit</button>
       </form>
     </div>
-    <span v-if="users.length"> {{filteredUsers.length}} / {{users.length}} users</span>
+    <span v-if="users.length" :class="{red: filteredUsers.length>30}" class="strong"> {{filteredUsers.length}} / {{users.length}} users</span>
     <table>
       <thead>
         <tr>
@@ -250,3 +251,12 @@
     },
   }).mount("#app");
 </script>
+
+<style>
+  .red {
+    color: red;
+  }
+  .strong {
+    font-weight: bold;
+  }
+</style>
