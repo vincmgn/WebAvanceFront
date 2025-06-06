@@ -15,9 +15,44 @@
             <option value="male">👨</option>
             <option value="female">👩</option>
           </select>
-          <input v-model="searchInput" type="text" placeholder="Search by name" style="min-width: 400px; margin: 0" />
+          <label for="age-select">Select age :</label>
+          <input v-model="searchInput" type="text" id="age-select" placeholder="Search by name" style="min-width: 400px; margin: 0" />
         </div>
       </div>
+      <form style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem; margin-bottom: 1rem" @submit.prevent="submit">
+        <div>
+          <label for="photo">Photo</label>
+          <input id="photo" name="photo" type="text" v-model="formData.photo" />
+        </div>
+        <div>
+          <label for="firstName">Firstname</label>
+          <input id="firstName" name="firstName" type="text" v-model="formData.firstName" />
+        </div>
+        <div>
+          <label for="lastname">Lastname</label>
+          <input id="lastname" name="lastname" type="text" v-model="formData.lastName" />
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" v-model="formData.email" />
+        </div>
+        <div>
+          <label for="tel">Tel</label>
+          <input id="tel" name="tel" type="tel" v-model="formData.tel" />
+        </div>
+        <div>
+          <label for="age">Age</label>
+          <input id="age" name="age" type="number" v-model.number="formData.age" />
+        </div>
+        <div>
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender" v-model="formData.gender">
+            <option value="male">👨 Male</option>
+            <option value="female">👩 Female</option>
+          </select>
+        </div>
+        <button type="submit" style="margin-top: 1.5rem; width: 200px">Submit</button>
+      </form>
     </div>
     <span v-if="users.length"> {{total}} / {{users.length}} users</span>
     <table>
@@ -29,16 +64,17 @@
           <th>Tel</th>
           <th style="cursor: pointer" @click="ageSort">Age <span v-if="users.length">{{ sortIcon }}</span></th>
           <th>Gender</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="user in filteredUsers" :key="user.login.username">
-          <td><img :src="user.picture.medium" alt="" /></td>
+          <td><img :src="user.picture.medium" alt="" style="width: 80px; height: auto" /></td>
           <td>{{user.name.first}} {{user.name.last}}</td>
           <td>{{user.email}}</td>
           <td>{{user.phone}}</td>
           <td>{{user.dob.age}}</td>
-          <td>{{user.gender === "male" ? "👨" : "👩"}}</td>
+          <td><span style="font-size: 1.5rem">{{user.gender === "male" ? "👨" : "👩"}}</span></td>
         </tr>
       </tbody>
     </table>
@@ -133,6 +169,52 @@
 
       const removeAccents = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
+      // add new user with form
+      const formData = ref({
+        photo: "",
+        firstName: "",
+        lastName: "",
+        email: "",
+        tel: "",
+        age: null,
+        gender: "",
+      });
+
+      const submit = () => {
+        if (!formData.value.firstName || !formData.value.lastName || !formData.value.email || !formData.value.tel || !formData.value.age || !formData.value.gender) {
+          alert("Please fill in all fields.");
+          return;
+        }
+
+        const newUser = {
+          picture: { medium: formData.value.photo || "https://via.placeholder.com/150" },
+          name: { first: formData.value.firstName, last: formData.value.lastName },
+          email: formData.value.email,
+          phone: formData.value.tel,
+          dob: { age: formData.value.age },
+          gender: formData.value.gender,
+          login: { username: `${formData.value.firstName.toLowerCase()}_${formData.value.lastName.toLowerCase()}` },
+        };
+
+        users.value.push(newUser);
+        total.value = users.value.length;
+
+        localStorage.setItem("filteredUsers", JSON.stringify(users.value));
+        resetForm();
+      };
+
+      const resetForm = () => {
+        formData.value = {
+          photo: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+          tel: "",
+          age: null,
+          gender: "",
+        };
+      };
+
       return {
         users,
         total,
@@ -140,8 +222,10 @@
         filteredUsers,
         sortIcon,
         searchInput,
+        formData,
         ageSort,
         fetchUsers,
+        submit,
       };
     },
   }).mount("#app");
